@@ -1,5 +1,5 @@
 # TorchRTM: A PyTorch-based Radiative Transfer Model
-
+[![PyPI version](https://badge.fury.io/py/torchrtm.svg)](https://pypi.org/project/torchrtm/)
 **TorchRTM** is a flexible and efficient package designed for simulating radiative transfer in the atmosphere, vegetation, and soil systems, based on the **PROSAIL** model. It leverages GPU-accelerated computations and integrates various atmospheric correction models, including **SMAC** for top-of-atmosphere reflectance estimation. This package is particularly suitable for remote sensing and environmental monitoring applications and is build for pyTorch integration.
 
 ---
