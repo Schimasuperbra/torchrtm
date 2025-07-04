@@ -7,14 +7,14 @@ Unit tests for atmospheric correction utilities and SMAC–PROSAIL linkage.
 
 import torch
 import pytest
-from torchrtm.atmosphere.smac import (
+from ..torchrtm.atmosphere.smac import (
     smac,
     calculate_pressure_from_altitude,
     canp_to_ban_5,
     toc_to_toa,
 )
-from torchrtm.models import prosail_shell_v2
-from torchrtm.data_loader import load_coefmat, load_prospectd_matrix, load_soil_spectra, load_smac_sensor
+from ..torchrtm.models import prosail_shell_v2
+from ..torchrtm.data_loader import load_coefmat, load_prospectd_matrix, load_soil_spectra, load_smac_sensor
 
 
 def test_pressure_from_altitude():
