@@ -1,4 +1,5 @@
 # TorchRTM: A PyTorch-based Radiative Transfer Model
+[![PyPI version](https://badge.fury.io/py/torchrtm.svg)](https://pypi.org/project/torchrtm/)
 
 **TorchRTM** is a flexible and efficient package designed for simulating radiative transfer in the atmosphere, vegetation, and soil systems, based on the **PROSAIL** model. It leverages GPU-accelerated computations and integrates various atmospheric correction models, including **SMAC** for top-of-atmosphere reflectance estimation. This package is particularly suitable for remote sensing and environmental monitoring applications and is build for pyTorch integration.
 
@@ -35,7 +36,10 @@ pip install torchrtm
 The `prosail_shell_v2` function can be used to simulate the canopy reflectance based on input vegetation parameters.
 
 ```python
+<<<<<<< HEAD
 from torchrtm.models import prosail
+=======
+from torchrtm.models import prosail_shell_v2
 import torch
 # Simulate canopy reflectance
 B=10000
@@ -53,7 +57,10 @@ psi=torch.tensor([10.0] * B).to(device)
 alpha=torch.tensor([40.0] * B).to(device)
 
 psoil=torch.tensor([0.5] * B).to(device)
+<<<<<<< HEAD
 toc = prosail(traits,N,LIDFa,LIDFb,lai,q,tts,tto,psi,alpha,psoil,batch_size=100000,use_prospectd=False,lidtype=2)
+=======
+toc = prosail_shell_v2(traits,N,LIDFa,LIDFb,lai,q,tts,tto,psi,alpha,psoil,batch_size=100000,use_prospectd=False,lidtype=2)
 ```
 
 ### 2. Atmospheric Correction with SMAC
