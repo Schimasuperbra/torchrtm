@@ -168,7 +168,7 @@ def volscatt(tts, tto, psi, ttl, len_batch=0,len_na = 13):
     btran1 = torch.abs(bts - bto)
     btran2 = pi - torch.abs(bts + bto - pi)
     if len_batch == 0:
-        band_condi = torch.zeros(len_na.to(device) + 1
+        band_condi = torch.zeros(len_na.to(device)) + 1
         condi_psir_btran1 = psir <= btran1
         bt1[condi_psir_btran1] = psir
     else:
