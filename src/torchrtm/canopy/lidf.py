@@ -64,7 +64,6 @@ def lidf_1(na, a=-0.3500, b=-0.1500):
     device=na.device
     tt = (np.concatenate([(np.array(range(8)) + 1) * 10, 80 + (np.array([9, 10, 11, 12]) - 8) * 2]))  # Wavelength grid
     if len(a) == 1:
-        print('now is 1')
         na, a, b = na.data.cpu().numpy(), a.data.cpu().numpy(), b.data.cpu().numpy()
         #freq = np.zeros((na))
         freq = np.zeros(len(na))

@@ -1,1 +1,0 @@
-from .check_info_scrap import get_rs_info

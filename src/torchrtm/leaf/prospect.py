@@ -158,9 +158,9 @@ def plate_torch(trans: torch.Tensor, r12: torch.Tensor, t12: torch.Tensor,
     else:
       return rho
 
-# 函数 2: 仅计算反射率
 
-def prospect5b(traits, N, CoefMat=None, alpha=40.0, print_both=True, device='cpu',with_power = False):
+
+def prospect5b(traits, N, CoefMat=None, alpha=40.0, print_both=True, device='cuda',with_power = False):
     """
     PROSPECT 5B model.
 
@@ -219,7 +219,7 @@ def prospect5b(traits, N, CoefMat=None, alpha=40.0, print_both=True, device='cpu
 
 
 
-def prospectd(traits, N, CoefMat=None, alpha=40.0, print_both=True, device='cpu',with_power = False):
+def prospectd(traits, N, CoefMat=None, alpha=40.0, print_both=True, device='cuda',with_power = False):
     """
     PROSPECT D model.
 

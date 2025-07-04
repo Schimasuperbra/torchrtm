@@ -24,7 +24,7 @@ from torchrtm.data_loader import load_soil_spectra
 from torchrtm.utils import to_device
 
 
-def prosail_shell_v2(
+def prosail(
     traits, N, LIDFa, LIDFb, lai, q,
     tts, tto, psi, tran_alpha, psoil,
     batch_size=0, use_prospectd=True, lidtype=1, to_cuda=False

@@ -41,7 +41,7 @@ def foursail_main(
 
       # Fallback to default soil data if none is provided
     if dry_soil is None or wet_soil is None:
-        dry_np, wet_np = load_soil_data()
+        dry_np, wet_np = load_soil_spectra()
         dry_soil = torch.tensor(dry_np, dtype=torch.float32, device=rho.device)
         wet_soil = torch.tensor(wet_np, dtype=torch.float32, device=rho.device)
 

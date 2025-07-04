@@ -6,7 +6,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='torchrtm',
-    version='1.1.1',
+    version='1.1.8',
     description='Torch-based Vegetation Radiative Transfer Model library (PROSPECT, SAIL, SMAC)',
     long_description=long_description,
     long_description_content_type='text/markdown',

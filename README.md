@@ -35,25 +35,25 @@ pip install torchrtm
 The `prosail_shell_v2` function can be used to simulate the canopy reflectance based on input vegetation parameters.
 
 ```python
-from torchrtm.models import prosail_shell_v2
-
+from torchrtm.models import prosail
+import torch
 # Simulate canopy reflectance
-toc_full = prosail_shell_v2(
-    traits=torch.tensor([[40.0, 8.0, 0.0, 0.01, 0.008]]),  # Example vegetation traits
-    N=torch.tensor([1.5]),
-    LIDFa=torch.tensor([-0.3]),
-    LIDFb=torch.tensor([-0.1]),
-    lai=torch.tensor([3.0]),
-    q=torch.tensor([0.5]),
-    tts=torch.tensor([30.0]),
-    tto=torch.tensor([20.0]),
-    psi=torch.tensor([10.0]),
-    tran_alpha=torch.tensor([40.0]),
-    psoil=torch.tensor([0.5]),
-    batch_size=10000,
-    use_prospectd=False,
-    lidtype=1
-)
+B=10000
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+traits=torch.tensor([[40.0, 8.0, 0.0, 0.01, 0.008]] * B).to(device)
+N=torch.tensor([1.5] * B).to(device)
+LIDFa=torch.tensor([-0.3] * B).to(device)
+LIDFb=torch.tensor([-0.1] * B).to(device)
+lai=torch.tensor([3.0] * B).to(device)
+q=torch.tensor([0.5] * B).to(device)
+tts=torch.tensor([30.0] * B).to(device)
+tto=torch.tensor([20.0] * B).to(device)
+psi=torch.tensor([10.0] * B).to(device)
+alpha=torch.tensor([40.0] * B).to(device)
+
+psoil=torch.tensor([0.5] * B).to(device)
+toc = prosail(traits,N,LIDFa,LIDFb,lai,q,tts,tto,psi,alpha,psoil,batch_size=100000,use_prospectd=False,lidtype=2)
 ```
 
 ### 2. Atmospheric Correction with SMAC

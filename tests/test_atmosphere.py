@@ -85,7 +85,7 @@ def test_toc_to_toa_with_prosail():
 
     # Load sensor information
     sensor_name = "Sentinel2A-MSI"
-    coefs,sm_wl = load_smac_sensor(_.split('.')[0])
+    coefs,sm_wl = load_smac_sensor(sensor_name.split('.')[0])
     bans_num =  len(sm_wl)
     # Run the SMAC function with the loaded coefficients
     outputs = smac(tts, tto, psi, coefs)

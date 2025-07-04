@@ -94,7 +94,6 @@ def smac(tts, tto, psi, coefs, aot550=0.325, uo3=0.35, uh2o=1.41, Pa=1013.25):
     uch4 = Peq ** pch4
     uno2 = Peq ** pno2
     uco = Peq ** pco
-    print(m.shape,ao3.shape)
 
     # Compute the transmission for water vapor, ozone, and other gases.
     to3 = torch.exp(ao3 * (uo3 * m) ** no3)

@@ -24,4 +24,4 @@ from . import utils
 from . import data_loader     # Added to expose data_loader as part of the public API
 from . import models          # High-level models (only PROSAIL for now)
 
-__version__ = "0.1.0"
+__version__ = "1.1.8"

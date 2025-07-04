@@ -8,4 +8,4 @@ Includes:
     - prosail_shell_v2: Full PROSAIL canopy reflectance simulation wrapper.
 """
 
-from .models import prosail_shell_v2
+from .models import prosail
