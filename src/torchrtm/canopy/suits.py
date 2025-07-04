@@ -145,7 +145,7 @@ def volscatt(tts, tto, psi, ttl, len_batch=0,len_na = 13):
     # Compute outgoing scattering coefficients
     condi_cosbto_1 = torch.abs(cosbto) < 1
     if len_batch == 0:
-        band_condi = torch.zeros(len_na.to(device)
+        band_condi = torch.zeros(len_na.to(device))
     else:
         band_condi = torch.zeros(len_batch, len_na).to(device)
 
