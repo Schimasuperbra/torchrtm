@@ -9,6 +9,9 @@ import torch
 import numpy as np
 from scipy.stats import qmc
 from tqdm import tqdm
+from torchrtm.utils.torch_utils import normalize_parameters
+from torchrtm.models import prosail
+from torchrtm.leaf.prospect import prospect5b,prospectd
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -89,9 +92,9 @@ def Torchlut(param_type='prosail', table_size=500000, std=0, batch=10000, wavele
                 traits = torch.stack([Cab,Car,Cbrown,Cw,Cm],axis = 1)
                 spec_data = simulator(traits,N,LIDFa,LIDFb,lai,q,tts,tto,psi,alpha,psoil,batch_size=1,use_prospectd=True,lidtype=2)
         if param_type == 'atom':
-            aot550 = atom_papra[:,-3]
-            uo3 = atom_papra[:,-2]
-            uh2o = atom_papra[:,-1]
+            aot550 = many_paras[:,-3]
+            uo3 = many_paras[:,-2]
+            uh2o = many_paras[:,-1]
             coefs,sm_wl = load_smac_sensor(sensor_name.split('.')[0])
             Ta_s, Ta_o, T_g, ra_dd, ra_so, ta_ss, ta_sd, ta_oo, ta_do = smac(tts,tto,psi,coefs)
             # return to the R_TOA
