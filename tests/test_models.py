@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import pandas as pd
-from torchrtm.models import prosail_shell_v2
+from torchrtm.models import prosail
 
 def test_prosail_shell_v2_runs():
     batch_size = 2
