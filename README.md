@@ -1,0 +1,388 @@
+# TorchRTM: A PyTorch-based Radiative Transfer Modeling Toolkit
+
+[![PyPI version](https://badge.fury.io/py/torchrtm.svg)](https://pypi.org/project/torchrtm/)
+TorchRTM is a GPU-accelerated, modular, and research-ready radiative transfer modeling (RTM) library built on top of PyTorch.
+
+This repository accompanies the paper:
+
+> **TorchRTM: A high-performance vegetation RTM package for deep learning integration**
+
+The corresponding supplementary code is organized as follows:
+
+- **`Start_Tutorial/`**  
+  Contains `SI_code_torch_rtm_quick_Start_Tutorial`, which reproduces the examples presented in the paper and provides a step-by-step guide for using TorchRTM.
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/Schimasuperbra/torchrtm/blob/main/Start_Tutorial/quick_start.ipynb
+)
+
+- **`Translation_Fidelity/`**  
+  Contains `SI_code_torch_rtm_translation_fidelity`, which evaluates the consistency of TorchRTM outputs against those from other established RTM implementations.
+
+See the source code at https://pypi.org/project/torchrtm/.
+
+## Features
+
+It integrates:
+
+* **Leaf RTMs**: PROSPECT-5B, PROSPECT-D, PROSPECT-PRO
+* **Canopy RTMs**: 4SAIL, PROSAIL
+* **Atmospheric Modeling**: SMAC (TOC→TOA conversion)
+* **LUT Tools**: Torchlut (LUT generator), Torchlut_pred (GPU KNN retrieval)
+* **High Performance**: Batch computation, CUDA support
+
+TorchRTM is ideal for remote sensing, vegetation trait retrieval, radiative transfer simulation, environmental monitoring, machine learning and RTM-based inversion workflows.
+
+## 🌟 Key Features
+
+* Full PROSPECT + PROSAIL + SMAC integration
+* GPU-accelerated simulations for millions of samples
+* High-performance LUT generator (Torchlut)
+* Fast KNN-style LUT-based retrieval engine (Torchlut_pred)
+* Supports PROSPECT-5B / D / PRO
+* Supports TOC and TOA reflectance
+* Fully compatible with PyTorch pipelines and deep learning models
+
+## 📦 Installation
+```bash
+pip install torchrtm
+```
+
+### Requirements
+
+* Python ≥ 3.9
+* PyTorch ≥ 1.12  
+  (Install PyTorch based on your hardware: https://pytorch.org/get-started/locally/)
+
+## 📘 User Guide
+
+This README includes complete usage documentation for:
+
+1. PROSPECT / PROSAIL model
+2. SMAC atmospheric correction
+3. Torchlut – fast LUT generator
+4. Torchlut_pred – GPU KNN retrieval
+5. Full inversion pipeline (LUT → retrieval)
+
+> Please see the SI_code_torch_rtm_quick_Start_Tutorial.ipynb for more detail. It can run directly by google colab.
+---
+
+## 1. PROSAIL / PROSPECT Model Usage
+
+TorchRTM provides a unified PROSAIL implementation:
+```python
+from torchrtm.models import prosail
+```
+
+```python
+rho, tau = prospectd(traits, N, alpha=alpha, print_both=True) 
+# also supports: prospect5b / prospectpro
+```
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `traits` | Tensor `(batch, n_traits)` | Leaf biochemical parameters (Cab, Car, Cbrown, Cw, Cm, etc.) |
+| `N` | Tensor `(batch)` | Leaf structure parameter |
+| `alpha` | Tensor | Leaf transmittance parameter (commonly 40°) |
+| `print_both` | bool | if print both of rho,tau, if not only output rho|
+
+### Notes
+
+**`traits` must be provided in a fixed parameter order depending on the PROSPECT model version:**
+
+- **prospect5b** → `Cab, Car, Cbrown, Cw, Cm`
+- **prospectd** → `Cab, Car, Cbrown, Cw, Cm, Canth`
+- **prospectpro** → `Cab, Car, Cbrown, Cw, Canth, Prot, Cbc`
+
+### Returns
+
+A tensor of size:
+```
+(batch, spectral_length), (batch, spectral_length)
+```
+
+Containing:
+
+| Output | Description |
+|--------|-------------|
+| `rho`  | Leaf reflectance spectrum computed by the PROSPECT model (leaf-scale bi-directional reflectance). |
+| `tau`  | Leaf transmittance spectrum computed by the PROSPECT model (leaf-scale bi-directional transmittance). |
+
+
+
+```python
+prosail(
+    traits, N, LIDFa, LIDFb, lai, q,
+    tts, tto, psi, tran_alpha, psoil,
+    batch_size=0, prospect_type='prospect5b', lidtype=1
+)
+```
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `traits` | Tensor `(batch, n_traits)` | Leaf biochemical parameters (Cab, Car, Cbrown, Cw, Cm, etc.) |
+| `N` | Tensor `(batch)` | Leaf structure parameter |
+| `LIDFa` / `LIDFb` | Tensor | Leaf inclination distribution parameters |
+| `lai` | Tensor | Leaf Area Index |
+| `q` | Tensor | Hotspot parameter |
+| `tts` | Tensor | Solar zenith angle (degrees) |
+| `tto` | Tensor | Observer zenith angle (degrees) |
+| `psi` | Tensor | Relative azimuth angle (degrees) |
+| `tran_alpha` | Tensor | Leaf transmittance parameter (commonly 40°) |
+| `psoil` | Tensor | Soil moisture parameter |
+| `batch_size` | int | Processing batch size (for GPU memory control) |
+| `prospect_type` | str | `"prospect5b"`, `"prospectd"`, `"prospectpro"` |
+| `lidtype` | int | LIDF type (1–4) |
+
+
+
+
+### Returns
+
+A tensor of size:
+```
+(batch, spectral_length, 7)
+```
+
+Containing:
+
+| Output | Description |
+|--------|-------------|
+| RDDT   | Reflectance for Diffuse-Downward Transmission |
+| RSDT   | Reflectance for Solar-Downward Transmission |
+| RDOT   | Reflectance for Diffuse Outgoing Transmission |
+| RSOT   | Reflectance for Solar Outgoing Transmission |
+| TSD    | Total Solar Downward Transmission |
+| TDD    | Total Diffuse Downward Transmission |
+| RDD    | Reflectance for Diffuse-Downward Irradiance |
+
+
+### Example: Simulating Canopy Reflectance
+```python
+from torchrtm.models import prosail
+import torch
+
+B = 5000
+device = "cuda"
+
+traits = torch.rand(B, 5).to(device)
+N = torch.rand(B).to(device)
+LIDFa = torch.zeros(B).to(device)
+LIDFb = torch.zeros(B).to(device)
+lai = torch.ones(B).to(device) * 3
+q = torch.ones(B).to(device) * 0.5
+tts = torch.ones(B).to(device) * 30
+tto = torch.ones(B).to(device) * 20
+psi = torch.ones(B).to(device) * 10
+alpha = torch.ones(B).to(device) * 40
+psoil = torch.ones(B).to(device) * 0.5
+
+toc = prosail(
+    traits, N, LIDFa, LIDFb, lai, q,
+    tts, tto, psi, alpha, psoil,
+    batch_size=5000,
+    prospect_type="prospect5b",
+    lidtype=2
+)
+
+print(toc.shape)
+```
+
+---
+
+## 2. SMAC Atmospheric Correction
+
+TorchRTM supports SMAC for TOA correction.
+```python
+from torchrtm.atmosphere.smac import smac
+from torchrtm.data_loader import load_smac_sensor
+```
+
+### Example
+```python
+coefs, sm_wl = load_smac_sensor("S2A")
+
+Ta_s, Ta_o, T_g, ra_dd, ra_so, ta_ss, ta_sd, ta_oo, ta_do = smac(
+    tts=torch.tensor([30.0]),
+    tto=torch.tensor([20.0]),
+    psi=torch.tensor([10.0]),
+    coefs=coefs
+)
+```
+
+### TOC → TOA Conversion
+```python
+from torchrtm.atmosphere.smac import toc_to_toa
+
+R_TOC, R_TOA = toc_to_toa(
+    toc, sm_wl - 400,
+    ta_ss, ta_sd, ta_oo, ta_do,
+    ra_so, ra_dd, T_g
+)
+```
+
+---
+
+## 3. Torchlut: High-Performance LUT Generator
+
+Generates millions of simulated samples using PROSPECT, PROSAIL, or ATOM.
+```python
+from torchrtm.utils.torch_utils import Torchlut
+```
+
+### `Torchlut()` — API Documentation
+```python
+Torchlut(
+    model='prospect5b',
+    table_size=500000,
+    std=0,
+    batch=10000,
+    wavelength=None,
+    sensor_name='LANDSAT4-TM',
+    sail_prospect='prospectd',
+    use_atom=False,
+    para_addr=None
+)
+```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `model` | `"prospect5b"`, `"prospectd"`, `"prospectpro"`, `"prosail"` |
+| `table_size` | Number of samples to generate |
+| `std` | Gaussian noise standard deviation |
+| `batch` | Simulation batch size |
+| `wavelength` | Select specific wavelength indices |
+| `sensor_name` | Used when `use_atom=True` |
+| `sail_prospect` | Leaf model used inside PROSAIL |
+| `use_atom` | Enable ATOM (PROSAIL + SMAC) |
+| `para_addr` | Parameter range configuration |
+
+### Notes
+
+When `use_atom=True`, the following sensor spectral-response files are supported:
+
+- `LANDSAT4-TM`
+- `LANDSAT5-TM`
+- `LANDSAT7-ETM`
+- `LANDSAT8-OLI`
+- `Sentinel2A-MSI`
+- `Sentinel2B-MSI`
+- `Sentinel3A-OLCI`
+- `Sentinel3B-OLCI`
+- `TerraAqua-MODIS`
+
+
+### Returns
+```python
+ref_list   # reflectance (TOC or TOA)
+para_list  # parameter vectors
+```
+
+### Torchlut Example
+```python
+ref, params = Torchlut(
+    model="prospectd",
+    table_size=100000,
+    batch=5000,
+    std=0.01
+)
+```
+
+---
+
+## 4. Torchlut_pred: GPU KNN Retrieval Engine
+
+Fast, block-wise KNN retrieval optimized for LUT inversion.
+```python
+from torchrtm.utils.torch_utils import Torchlut_pred
+```
+
+### `Torchlut_pred()` — API Documentation
+```python
+Torchlut_pred(
+    xb, xq, y,
+    k=5,
+    distance_order=2,
+    xb_block=1000,
+    batch_size=200,
+    device="cuda"
+)
+```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `xb` | Database features (N, D) |
+| `xq` | Query features (M, D) |
+| `y` | Database target values (N,) or (N, D_out) |
+| `k` | Number of nearest neighbors |
+| `distance_order` | 1 = Manhattan, 2 = Euclidean, etc. We recommand to set it as 9 |
+| `xb_block` | Split xb to avoid GPU OOM |
+| `batch_size` | Query batch size |
+| `device` | `cuda` / `cpu` |
+
+### Returns
+```python
+preds: shape (M,) or (M, D_out)
+```
+
+### How It Works (Internal Mechanism)
+
+1. Move all tensors to GPU
+2. Process queries in batches
+3. For each batch, iterate through xb in blocks
+4. Compute distance matrix efficiently (when distance_order = 2):
+   $$\|x-y\| = \sqrt{x^2 + y^2 - 2xy}$$
+5. Select global top-k neighbors
+6. Average retrieved y-values
+
+Supports multi-million LUT inference on consumer GPUs.
+
+### Example
+```python
+preds = Torchlut_pred(
+    xb=torch.tensor(ref),
+    xq=torch.tensor(query_ref),
+    y=torch.tensor(params),
+    k=5,
+    device="cuda"
+)
+```
+
+---
+
+## 5. Complete Retrieval Pipeline
+```python
+# Step 1: Build LUT
+ref_lut, para_lut = Torchlut(model="prospectd", table_size=300000)
+
+# Step 2: Convert measured reflectance to tensor
+xq = torch.tensor(measured_ref)
+
+# Step 3: KNN retrieval
+pred = Torchlut_pred(
+    xb=torch.tensor(ref_lut),
+    xq=xq,
+    y=torch.tensor(para_lut),
+    k=5
+)
+```
+
+---
+
+## 🤝 Contributing
+
+PRs and issues are welcome!  
+Please include tests and clear descriptions.
+
+---
+
+## 📜 License
+
+MIT License.
+
+---
